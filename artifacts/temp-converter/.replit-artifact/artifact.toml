@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Temperature Converter"
+version = "1.0.0"
+id = "artifacts/temp-converter"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22072
+
+[services.development]
+run = "pnpm --filter @workspace/temp-converter run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/temp-converter", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/temp-converter/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22072"
+BASE_PATH = "/"
