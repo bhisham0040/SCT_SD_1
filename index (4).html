@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temperature Converter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 2rem 2.25rem 2.5rem;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #718096;
+      margin-bottom: 1.75rem;
+    }
+
+    .scale-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .scale-box {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0.875rem;
+      cursor: text;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .scale-box:focus-within,
+    .scale-box.active {
+      border-color: #4299e1;
+      background: #ebf8ff;
+    }
+
+    .scale-name {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #a0aec0;
+      margin-bottom: 4px;
+    }
+
+    .scale-box:focus-within .scale-name,
+    .scale-box.active .scale-name {
+      color: #3182ce;
+    }
+
+    .scale-symbol {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #cbd5e0;
+      margin-bottom: 6px;
+    }
+
+    .scale-box:focus-within .scale-symbol,
+    .scale-box.active .scale-symbol {
+      color: #4299e1;
+    }
+
+    .scale-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #2d3748;
+      font-family: inherit;
+    }
+
+    .scale-input::placeholder {
+      color: #cbd5e0;
+      font-weight: 400;
+    }
+
+    /* Hide number input arrows */
+    .scale-input::-webkit-outer-spin-button,
+    .scale-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .scale-input[type=number] { -moz-appearance: textfield; }
+
+    hr {
+      border: none;
+      border-top: 1px solid #edf2f7;
+      margin: 1.25rem 0;
+    }
+
+    .ref-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #a0aec0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    .ref-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .ref-btn {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s, border-color 0.12s;
+      font-family: inherit;
+    }
+
+    .ref-btn:hover {
+      background: #ebf8ff;
+      border-color: #90cdf4;
+    }
+
+    .ref-btn-name {
+      font-size: 0.72rem;
+      color: #718096;
+    }
+
+    .ref-btn-val {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-top: 2px;
+    }
+
+    .reset-btn {
+      margin-top: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 7px 16px;
+      font-size: 0.82rem;
+      color: #718096;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .reset-btn:hover {
+      background: #f7fafc;
+      border-color: #cbd5e0;
+    }
+
+    .error-msg {
+      font-size: 0.75rem;
+      color: #e53e3e;
+      margin-top: 0.5rem;
+      min-height: 1rem;
+    }
+
+    footer {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: #cbd5e0;
+      text-align: center;
+    }
+
+    @media (max-width: 400px) {
+      .card { padding: 1.25rem 1rem 1.75rem; }
+      .scale-input { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🌡️ Temperature Converter</h1>
+  <p class="subtitle">Type any value to convert across all three scales.</p>
+
+  <div class="scale-grid">
+    <div class="scale-box active" id="box-c">
+      <div class="scale-name">Celsius</div>
+      <div class="scale-symbol">°C</div>
+      <input class="scale-input" id="inp-c" type="number" placeholder="0" inputmode="decimal" aria-label="Celsius" />
+    </div>
+    <div class="scale-box" id="box-f">
+      <div class="scale-name">Fahrenheit</div>
+      <div class="scale-symbol">°F</div>
+      <input class="scale-input" id="inp-f" type="number" placeholder="32" inputmode="decimal" aria-label="Fahrenheit" />
+    </div>
+    <div class="scale-box" id="box-k">
+      <div class="scale-name">Kelvin</div>
+      <div class="scale-symbol">K</div>
+      <input class="scale-input" id="inp-k" type="number" placeholder="273.15" inputmode="decimal" aria-label="Kelvin" />
+    </div>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+
+  <hr />
+
+  <div class="ref-label">Common reference points</div>
+  <div class="ref-grid">
+    <button class="ref-btn" onclick="setC(-273.15)">
+      <div class="ref-btn-name">Absolute zero</div>
+      <div class="ref-btn-val">−273.15 °C · 0 K</div>
+    </button>
+    <button class="ref-btn" onclick="setC(0)">
+      <div class="ref-btn-name">Water freezing</div>
+      <div class="ref-btn-val">0 °C · 32 °F</div>
+    </button>
+    <button class="ref-btn" onclick="setC(37)">
+      <div class="ref-btn-name">Human body temp</div>
+      <div class="ref-btn-val">37 °C · 98.6 °F</div>
+    </button>
+    <button class="ref-btn" onclick="setC(100)">
+      <div class="ref-btn-name">Water boiling</div>
+      <div class="ref-btn-val">100 °C · 212 °F</div>
+    </button>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+
+  <footer>Formulas: °F = (°C × 9/5) + 32 &nbsp;|&nbsp; K = °C + 273.15</footer>
+</div>
+
+<script>
+  const inpC = document.getElementById('inp-c');
+  const inpF = document.getElementById('inp-f');
+  const inpK = document.getElementById('inp-k');
+  const errorMsg = document.getElementById('error-msg');
+  const boxes = {
+    c: document.getElementById('box-c'),
+    f: document.getElementById('box-f'),
+    k: document.getElementById('box-k')
+  };
+
+  function round(v, d = 4) {
+    return parseFloat(v.toFixed(d));
+  }
+
+  function setActive(key) {
+    Object.entries(boxes).forEach(([k, el]) => {
+      el.classList.toggle('active', k === key);
+    });
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+  }
+
+  function clearError() {
+    errorMsg.textContent = '';
+  }
+
+  function fromC(c) {
+    if (c < -273.15) {
+      showError('Temperature cannot go below absolute zero (−273.15 °C / 0 K).');
+      return;
+    }
+    clearError();
+    inpF.value = round(c * 9 / 5 + 32);
+    inpK.value = round(c + 273.15);
+  }
+
+  function fromF(f) {
+    const c = (f - 32) * 5 / 9;
+    if (c < -273.15) {
+      showError('Temperature cannot go below absolute zero (−459.67 °F / 0 K).');
+      return;
+    }
+    clearError();
+    inpC.value = round(c);
+    inpK.value = round(c + 273.15);
+  }
+
+  function fromK(k) {
+    if (k < 0) {
+      showError('Kelvin cannot be negative. Absolute zero is 0 K.');
+      return;
+    }
+    clearError();
+    const c = k - 273.15;
+    inpC.value = round(c);
+    inpF.value = round(c * 9 / 5 + 32);
+  }
+
+  inpC.addEventListener('input', () => {
+    setActive('c');
+    if (inpC.value !== '') fromC(parseFloat(inpC.value));
+    else { inpF.value = ''; inpK.value = ''; clearError(); }
+  });
+
+  inpF.addEventListener('input', () => {
+    setActive('f');
+    if (inpF.value !== '') fromF(parseFloat(inpF.value));
+    else { inpC.value = ''; inpK.value = ''; clearError(); }
+  });
+
+  inpK.addEventListener('input', () => {
+    setActive('k');
+    if (inpK.value !== '') fromK(parseFloat(inpK.value));
+    else { inpC.value = ''; inpF.value = ''; clearError(); }
+  });
+
+  function setC(val) {
+    inpC.value = val;
+    setActive('c');
+    fromC(val);
+    inpC.focus();
+  }
+
+  function resetAll() {
+    inpC.value = '';
+    inpF.value = '';
+    inpK.value = '';
+    clearError();
+    setActive('c');
+    inpC.focus();
+  }
+</script>
+
+</body>
+</html>
